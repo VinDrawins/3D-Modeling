@@ -103,7 +103,7 @@ int main(int argc, char** argv)
 	glutReshapeFunc(Reshape);
 	glutKeyboardFunc(KeyInput);
 
-	glShadeModel(GL_FLAT);	//GL_FLAT would look much worse
+	glShadeModel(GL_FLAT);	
 	glEnable(GL_DEPTH_TEST);
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, MatSpec);
