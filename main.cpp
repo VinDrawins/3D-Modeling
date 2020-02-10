@@ -1,12 +1,31 @@
 #include<GL/glut.h>
 #include<Windows.h>
 #include"Camera.h"
+#include<iostream>
+using namespace std;
 
 static GLfloat MatSpec[] = { 1.0,1.0,1.0,1.0 };
 static GLfloat MatShininess[] = { 100.0 };
 static GLfloat LightPos[] = { -2.0,1.0,3.0,0.0 };
 
 CamView Camera;
+
+void DrawGrid(GLfloat size, GLint LinesX, GLint LinesZ)
+{
+	glColor3f(1, 1, 1);
+	glBegin(GL_LINES);
+	for (int xc = 0; xc < LinesX; xc++)
+	{
+		glVertex3f(-size / 2 + xc / (GLfloat)(LinesX - 1) * size, 0, size / 2);
+		glVertex3f(-size / 2 + xc / (GLfloat)(LinesX - 1) * size, 0, size / -2);
+	}
+	for (int zc = 0; zc < LinesX; zc++)
+	{
+		glVertex3f(size / 2, 0, -size / 2 + zc / (GLfloat)(LinesZ - 1) * size);
+		glVertex3f(size / -2, 0, -size / 2 + zc / (GLfloat)(LinesZ - 1) * size);
+	}
+	glEnd();
+}
 
 void Reshape(int x, int y)
 {
@@ -26,14 +45,27 @@ void Display(void)
 	glLoadIdentity();
 	Camera.Render();
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPos);
-	
+
+	GLfloat size = 5;
+	GLint LinesX = 30;
+	GLint LinesZ = 30;
+
+	GLfloat halfsize = size / 2;
+
+	glPushMatrix();
+	glColor3f(1, 1, 1);
+	glTranslatef(0, -0.5, 0);
+	DrawGrid(size, LinesX, LinesZ);
+	glPopMatrix();
+
 	glPushMatrix();
 	glTranslatef(10, 0, 0);
 	glutSolidCube(1);
 	glPopMatrix();
 
 	glPushMatrix();
-	glutSolidSphere(1.0, 20, 20);
+	glTranslatef(0, 0, 0);
+	glutSolidSphere(0.5, 50, 50);
 	glPopMatrix();
 
 	glFlush();
@@ -99,11 +131,12 @@ int main(int argc, char** argv)
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Camera Movement");
 	Camera.Move(F3dVector(0, 0, 3));
+	Camera.MoveForwards(1);
 	glutDisplayFunc(Display);
 	glutReshapeFunc(Reshape);
 	glutKeyboardFunc(KeyInput);
 
-	glShadeModel(GL_FLAT);	
+	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, MatSpec);
