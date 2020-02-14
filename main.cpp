@@ -8,6 +8,8 @@ static GLfloat MatSpec[] = { 1.0,1.0,1.0,1.0 };
 static GLfloat MatShininess[] = { 100.0 };
 static GLfloat LightPos[] = { -2.0,1.0,3.0,0.0 };
 
+float angle = 0;
+
 CamView Camera;
 
 void DrawGrid(GLfloat size, GLint LinesX, GLint LinesZ)
@@ -44,6 +46,9 @@ void Display(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 	Camera.Render();
+	
+	gluLookAt(3 * cos(angle), 1, 3 * sin(angle), 0, 0, 0, 0, 1, 0);
+
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPos);
 
 	GLfloat size = 5;
@@ -70,6 +75,22 @@ void Display(void)
 
 	glFlush();
 	glutSwapBuffers();
+}
+
+void Orbiting_Camera(int key, int x, int y)
+{
+	switch (key)
+	{
+	case GLUT_KEY_RIGHT:
+		angle += 0.1;
+		Display();
+		break;
+
+	case GLUT_KEY_LEFT:
+		angle -= 0.1;
+		Display();
+		break;
+	}
 }
 
 void KeyInput(unsigned char key, int x, int y)
@@ -135,6 +156,7 @@ int main(int argc, char** argv)
 	glutDisplayFunc(Display);
 	glutReshapeFunc(Reshape);
 	glutKeyboardFunc(KeyInput);
+	glutSpecialFunc(Orbiting_Camera);
 
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
