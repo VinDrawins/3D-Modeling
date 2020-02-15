@@ -8,13 +8,13 @@ static GLfloat MatSpec[] = { 1.0,1.0,1.0,1.0 };
 static GLfloat MatShininess[] = { 100.0 };
 static GLfloat LightPos[] = { -2.0,1.0,3.0,0.0 };
 
-float angle = 0;
+float angle = 0, angleY = 0, theta = 0;
+int rollx = 1, rolly = 1, rollz = 1;
 
 CamView Camera;
 
 void DrawGrid(GLfloat size, GLint LinesX, GLint LinesZ)
 {
-	glColor3f(1, 1, 1);
 	glBegin(GL_LINES);
 	for (int xc = 0; xc < LinesX; xc++)
 	{
@@ -43,15 +43,16 @@ void Reshape(int x, int y)
 
 void Display(void)
 {
+	glClearColor(0.1, 0.1, 0.1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 	Camera.Render();
 	
-	gluLookAt(3 * cos(angle), 1, 3 * sin(angle), 0, 0, 0, 0, 1, 0);
+	gluLookAt(3 * cos(angle), 3*sin(angleY), 3 * sin(angle), 0, 0, 0, 0, 1,0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPos);
 
-	GLfloat size = 5;
+	GLfloat size = 10;
 	GLint LinesX = 30;
 	GLint LinesZ = 30;
 
@@ -77,7 +78,7 @@ void Display(void)
 	glutSwapBuffers();
 }
 
-void Orbiting_Camera(int key, int x, int y)
+void KeyIn(int key, int x, int y)
 {
 	switch (key)
 	{
@@ -90,56 +91,10 @@ void Orbiting_Camera(int key, int x, int y)
 		angle -= 0.1;
 		Display();
 		break;
-	}
-}
 
-void KeyInput(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-	case 27:PostQuitMessage(0);
-		break;
-	case 'a':
-		Camera.RotateY(5);
+	case GLUT_KEY_UP:
+		angleY += 0.1;
 		Display();
-		break;
-	case 'd':
-		Camera.RotateY(-5);
-		Display();
-		break;
-	case 'w':
-		Camera.MoveForwards(-0.1);
-		Display();
-		break;
-	case 's':
-		Camera.MoveForwards(0.1);
-		Display();
-		break;
-	case 'x':
-		Camera.RotateX(5);
-		Display();
-		break;
-	case 'y':
-		Camera.RotateX(-5);
-		Display();
-		break;
-	case 'c':
-		Camera.StrafeRight(-0.1);
-		Display();
-		break;
-	case 'v':
-		Camera.StrafeRight(0.1);
-		Display();
-		break;
-	case 'f':
-		Camera.Move(F3dVector(0, -0.3, 0));
-		Display();
-		break;
-	case 'r':
-		Camera.Move(F3dVector(0, 0.3, 0));
-		Display();
-		break;
-	default:
 		break;
 	}
 }
@@ -155,8 +110,7 @@ int main(int argc, char** argv)
 	Camera.MoveForwards(1);
 	glutDisplayFunc(Display);
 	glutReshapeFunc(Reshape);
-	glutKeyboardFunc(KeyInput);
-	glutSpecialFunc(Orbiting_Camera);
+	glutSpecialFunc(KeyIn);
 
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
