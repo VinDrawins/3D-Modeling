@@ -1,6 +1,5 @@
 #include<GL/glut.h>
 #include<Windows.h>
-//#include"Camera.h"
 #include<iostream>
 using namespace std;
 
@@ -8,10 +7,10 @@ static GLfloat MatSpec[] = { 1.0,1.0,1.0,1.0 };
 static GLfloat MatShininess[] = { 100.0 };
 static GLfloat LightPos[] = { -2.0,1.0,3.0,0.0 };
 
-float angle = 0, angleY = 0, theta = 0;
-int rollx = 1, rolly = 1, rollz = 1;
-
-CamView Camera;
+GLdouble eyeX=1, eyeY=1, eyeZ=1;
+GLdouble lookatX = 0, lookatY = 0, lookatZ = 0;
+GLfloat angle = 0.1, angleY = 0.1, deltaAngleX = 0, deltaAngleY = 0;
+GLint xOrigin = -1, yOrigin = -1;
 
 void DrawGrid(GLfloat size, GLint LinesX, GLint LinesZ)
 {
@@ -46,9 +45,8 @@ void Display(void)
 	glClearColor(0.1, 0.1, 0.1, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
-	Camera.Render();
 	
-	gluLookAt(3 * cos(angle), 3*sin(angleY), 3 * sin(angle), 0, 0, 0, 0, 1,0);
+	gluLookAt(eyeX, eyeY, eyeZ, lookatX, 0, lookatZ, 0, 1, 0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPos);
 
@@ -65,8 +63,8 @@ void Display(void)
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(10, 0, 0);
-	glutSolidCube(1);
+	glTranslatef(lookatX, 0, lookatZ);
+	glutSolidCube(0.1);
 	glPopMatrix();
 
 	glPushMatrix();
@@ -78,22 +76,64 @@ void Display(void)
 	glutSwapBuffers();
 }
 
-void KeyIn(int key, int x, int y)
+void MouseInput(int button, int state, int MouseX, int MouseY)
+{
+	if (button == GLUT_LEFT_BUTTON)
+	{
+		if (state == GLUT_UP)
+		{
+			angle += deltaAngleX;
+			angle += deltaAngleY;
+			xOrigin = -1;
+			yOrigin = -1;
+			cout << endl << "After leaving Mouse Button: " << endl;
+			cout << "DeltaAngle: " << deltaAngleX << ", " << "DeltaAngleY: " << deltaAngleY << ", " << "xOrigin: " << xOrigin << ", " << "yOrigin: " << yOrigin << ", " << "MouseX: " << MouseX << ", " << "MouseY: " << MouseY << endl;
+		}
+		else
+		{
+			xOrigin = MouseX;
+			yOrigin = MouseY;
+		}
+	}
+}
+
+void MouseMove(int MouseX, int MouseY)
+{
+	if (xOrigin >= 0)
+	{
+		deltaAngleX = (MouseX - xOrigin) * 0.01;
+		deltaAngleY = (MouseY - yOrigin) * 0.01;
+		eyeY = 3 * sin(angleY + deltaAngleY);
+		eyeX = 3 * cos(angleY + deltaAngleY) * cos(angle + deltaAngleX);
+		eyeZ = 3 * cos(angleY+deltaAngleY) * sin(angle+deltaAngleX);
+		Display();
+		cout << "DeltaAngleX: " << deltaAngleX << ", " << "DeltaAngleY: " << deltaAngleY << ", " << "xOrigin: " << xOrigin << ", " << "yOrigin: " << yOrigin << ", " << "MouseX: " << MouseX << ", " << "MouseY: " << MouseY << endl;
+	}
+}
+
+void KeyInput(int key, int x, int y)
 {
 	switch (key)
 	{
 	case GLUT_KEY_RIGHT:
 		angle += 0.1;
+		eyeX = 3 * cos(angleY) * cos(angle);
+		eyeZ = 3 * cos(angleY) * sin(angle);
 		Display();
 		break;
 
 	case GLUT_KEY_LEFT:
 		angle -= 0.1;
+		eyeX = 3 * cos(angleY) * cos(angle);
+		eyeZ = 3 * cos(angleY) * sin(angle);
 		Display();
 		break;
 
 	case GLUT_KEY_UP:
 		angleY += 0.1;
+		eyeY = 3 * sin(angleY);
+		eyeX = 3 * cos(angleY) * cos(angle);
+		eyeZ = 3 * cos(angleY) * sin(angle);
 		Display();
 		break;
 	}
@@ -106,11 +146,11 @@ int main(int argc, char** argv)
 	glutInitWindowSize(500, 500);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Camera Movement");
-	Camera.Move(F3dVector(0, 0, 3));
-	Camera.MoveForwards(1);
 	glutDisplayFunc(Display);
 	glutReshapeFunc(Reshape);
-	glutSpecialFunc(KeyIn);
+	glutSpecialFunc(KeyInput);
+	glutMouseFunc(MouseInput);
+	glutMotionFunc(MouseMove);
 
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_DEPTH_TEST);
