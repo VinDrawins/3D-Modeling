@@ -1,6 +1,6 @@
 #include<GL/glut.h>
 #include<Windows.h>
-#include"Camera.h"
+//#include"Camera.h"
 #include<iostream>
 using namespace std;
 
