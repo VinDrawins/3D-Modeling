@@ -46,9 +46,10 @@ void Display(void)
 	glLoadIdentity();
 	
 
-	glTranslatef(0, 0, -3);
+	glTranslatef(0, 0, -5);
 	glRotatef(changeAngleY, 1, 0, 0);
 	glRotatef(changeAngleX, 0, 1, 0);
+	glTranslatef(-1, -1, 0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPos);
 
@@ -65,7 +66,7 @@ void Display(void)
 	glPopMatrix();
 
 	glPushMatrix();
-	glTranslatef(0, 0, 0);
+	glTranslatef(1, 1, 0);
 	glutSolidSphere(0.5, 50, 50);
 	glPopMatrix();
 
@@ -94,40 +95,9 @@ void MouseInput(int button, int state, int MouseX, int MouseY)
 
 void MouseMove(int MouseX, int MouseY)
 {
-	if (xOrigin >= 0)
-	{
 		changeAngleX = (MouseX - xOrigin);
 		changeAngleY = (MouseY - yOrigin);
 		Display();
-	}
-}
-
-void KeyInput(int key, int x, int y)
-{
-	switch (key)
-	{
-	case GLUT_KEY_RIGHT:
-		angle += 1;
-		eyeX = 3 * cos(angleY) * cos(angle);
-		eyeZ = 3 * cos(angleY) * sin(angle);
-		Display();
-		break;
-
-	case GLUT_KEY_LEFT:
-		angle -= 1;
-		eyeX = 3 * cos(angleY) * cos(angle);
-		eyeZ = 3 * cos(angleY) * sin(angle);
-		Display();
-		break;
-
-	case GLUT_KEY_UP:
-		angleY += 1;
-		eyeY = 3 * sin(angleY);
-		eyeX = 3 * cos(angleY) * cos(angle);
-		eyeZ = 3 * cos(angleY) * sin(angle);
-		Display();
-		break;
-	}
 }
 
 int main(int argc, char** argv)
@@ -139,7 +109,6 @@ int main(int argc, char** argv)
 	glutCreateWindow("Camera Movement");
 	glutDisplayFunc(Display);
 	glutReshapeFunc(Reshape);
-	glutSpecialFunc(KeyInput);
 	glutMouseFunc(MouseInput);
 	glutMotionFunc(MouseMove);
 
