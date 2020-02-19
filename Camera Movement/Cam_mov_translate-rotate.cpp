@@ -10,6 +10,7 @@ static GLfloat LightPos[] = { -2.0,1.0,3.0,0.0 };
 GLdouble eyeX=1, eyeY=1, eyeZ=1;
 GLfloat angle = 0.1, angleY = 0.1, changeAngleX = 0, changeAngleY = 0;
 GLint xOrigin = -1, yOrigin = -1;
+GLfloat lx = 0, ly = 0;
 
 void DrawGrid(GLfloat size, GLint LinesX, GLint LinesZ)
 {
@@ -47,8 +48,8 @@ void Display(void)
 	
 
 	glTranslatef(0, 0, -5);
-	glRotatef(changeAngleY, 1, 0, 0);
-	glRotatef(changeAngleX, 0, 1, 0);
+	glRotatef(ly, 1, 0, 0);
+	glRotatef(lx, 0, 1, 0);
 	glTranslatef(-1, -1, 0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPos);
@@ -95,9 +96,11 @@ void MouseInput(int button, int state, int MouseX, int MouseY)
 
 void MouseMove(int MouseX, int MouseY)
 {
-		changeAngleX = (MouseX - xOrigin);
-		changeAngleY = (MouseY - yOrigin);
-		Display();
+	changeAngleX = (MouseX - xOrigin);
+	changeAngleY = (MouseY - yOrigin);
+	lx = angle + changeAngleX;
+	ly = angleY + changeAngleY;
+	Display();
 }
 
 int main(int argc, char** argv)
