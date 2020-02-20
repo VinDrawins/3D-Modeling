@@ -1,16 +1,20 @@
+#define _USE_MATH_DEFINES
 #include<GL/glut.h>
 #include<Windows.h>
 #include<iostream>
+#include<math.h>
 using namespace std;
 
 static GLfloat MatSpec[] = { 1.0,1.0,1.0,1.0 };
 static GLfloat MatShininess[] = { 100.0 };
 static GLfloat LightPos[] = { -2.0,1.0,3.0,0.0 };
 
-GLdouble eyeX=1, eyeY=1, eyeZ=1;
-GLfloat angle = 0.1, angleY = 0.1, changeAngleX = 0, changeAngleY = 0;
+GLfloat angleX = 0.1, angleY = 0.1, changeAngleX = 0, changeAngleY = 0;
 GLint xOrigin = -1, yOrigin = -1;
-GLfloat lx = 0, ly = 0;
+GLfloat updateX = 0, updateY = 0;
+GLfloat xtrans, ytrans;
+float fov_y = 40.0f, cRadius = 5; //fov = Field of View.
+bool panning;
 
 void DrawGrid(GLfloat size, GLint LinesX, GLint LinesZ)
 {
@@ -34,7 +38,7 @@ void Reshape(int x, int y)
 		return;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(40, (GLdouble)x / (GLdouble)y, 1, 20);
+	gluPerspective(fov_y, (GLdouble)x / (GLdouble)y, 1, 20);
 	glMatrixMode(GL_MODELVIEW);
 	glViewport(0, 0, x, y);
 	glPointSize(GLfloat(x) / 200.0);
@@ -47,9 +51,9 @@ void Display(void)
 	glLoadIdentity();
 	
 
-	glTranslatef(0, 0, -5);
-	glRotatef(ly, 1, 0, 0);
-	glRotatef(lx, 0, 1, 0);
+	glTranslatef(xtrans, ytrans, -5);
+	glRotatef(updateY, 1, 0, 0);
+	glRotatef(updateX, 0, 1, 0);
 	glTranslatef(-1, -1, 0);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, LightPos);
@@ -77,20 +81,26 @@ void Display(void)
 
 void MouseInput(int button, int state, int MouseX, int MouseY)
 {
-	if (button == GLUT_LEFT_BUTTON)
+	int mod = glutGetModifiers();
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
-		if (state == GLUT_UP)
-		{
-			angle += changeAngleX;
-			angleY += changeAngleY;
-			xOrigin = -1;
-			yOrigin = -1;
-		}
-		else
-		{
-			xOrigin = MouseX;
-			yOrigin = MouseY;
-		}
+		angleX += changeAngleX;
+		angleY += changeAngleY;
+		xOrigin = -1;
+		yOrigin = -1;
+		cout << endl;
+	}
+		
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		xOrigin = MouseX;
+		yOrigin = MouseY;
+		panning = false;
+	}
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && mod == 4)
+	{
+		panning = true;
 	}
 }
 
@@ -98,8 +108,25 @@ void MouseMove(int MouseX, int MouseY)
 {
 	changeAngleX = (MouseX - xOrigin);
 	changeAngleY = (MouseY - yOrigin);
-	lx = angle + changeAngleX;
-	ly = angleY + changeAngleY;
+
+	cout << "Updated X: " << updateX << " ," << "Updated Y: " << updateY << endl;
+
+	if (panning == true)
+	{
+		float ndc_x = changeAngleX * 2.0f / 500;
+		float ndc_y = -changeAngleY * 2.0f / 500;
+		float aspect = 500 / 500;
+		float fov_rad = fov_y * M_PI / 180.0;
+		float tanfov = tan(fov_rad / 2.0);
+
+		xtrans = ndc_x * cRadius * tanfov * aspect;
+		ytrans = ndc_y * cRadius * tanfov;
+	}
+	else
+	{
+		updateX = angleX + changeAngleX;
+		updateY = angleY + changeAngleY;
+	}
 	Display();
 }
 
