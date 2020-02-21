@@ -11,10 +11,13 @@ static GLfloat LightPos[] = { -2.0,1.0,3.0,0.0 };
 
 GLfloat angleX = 0.1, angleY = 0.1, changeAngleX = 0, changeAngleY = 0;
 GLint xOrigin = -1, yOrigin = -1;
+GLint xOrigin_pan = -1, yOrigin_pan = -1;
+GLfloat changeAngleX_pan = 0, changeAngleY_pan = 0;
 GLfloat updateX = 0, updateY = 0;
-GLfloat xtrans, ytrans;
-float fov_y = 40.0f, cRadius = 5; //fov = Field of View.
+float xtrans, ytrans;
+float fov_y = 40.0f, cRadius = 5;	//fov = Field of View.
 bool panning;
+float ndc_x, ndc_y, ndc_x1, ndc_y1;
 
 void DrawGrid(GLfloat size, GLint LinesX, GLint LinesZ)
 {
@@ -82,48 +85,53 @@ void Display(void)
 void MouseInput(int button, int state, int MouseX, int MouseY)
 {
 	int mod = glutGetModifiers();
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && mod == 4)		//Input: hold(ALT) + release(LEFT_MOUSE_BUTTON )
 	{
 		angleX += changeAngleX;
 		angleY += changeAngleY;
 		xOrigin = -1;
 		yOrigin = -1;
-		cout << endl;
 	}
 		
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && mod == 4)		//Input: press (ALT + LEFT_MOUSE_BUTTON + Mouse-Movement)
 	{
 		xOrigin = MouseX;
 		yOrigin = MouseY;
 		panning = false;
 	}
 
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && mod == 4)
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP && mod == 1)		//Input: hold(SHIFT) + release(LEFT_MOUSE_BUTTON )
 	{
+		ndc_x1 += ndc_x;
+		ndc_y1 += ndc_y;
+		xOrigin_pan = -1;
+		yOrigin_pan = -1;
+	}
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && mod == 1)		//Input: press (SHIFT + LEFT_MOUSE_BUTTON + Mouse-Movement)  
+	{
+		xOrigin_pan = MouseX;
+		yOrigin_pan = MouseY;
 		panning = true;
 	}
 }
 
 void MouseMove(int MouseX, int MouseY)
 {
-	changeAngleX = (MouseX - xOrigin);
-	changeAngleY = (MouseY - yOrigin);
-
-	cout << "Updated X: " << updateX << " ," << "Updated Y: " << updateY << endl;
-
 	if (panning == true)
-	{
-		float ndc_x = changeAngleX * 2.0f / 500;
-		float ndc_y = -changeAngleY * 2.0f / 500;
-		float aspect = 500 / 500;
-		float fov_rad = fov_y * M_PI / 180.0;
-		float tanfov = tan(fov_rad / 2.0);
+	{		
+		changeAngleX_pan = (MouseX - xOrigin_pan);
+		changeAngleY_pan = (MouseY - yOrigin_pan);
+		ndc_x = changeAngleX_pan * 2.0f / 500;		//ndc_x = No direction change in x-field
+		ndc_y = -changeAngleY_pan * 2.0f / 500;		//ndc_y = No direction change in y-field
 
-		xtrans = ndc_x * cRadius * tanfov * aspect;
-		ytrans = ndc_y * cRadius * tanfov;
+		xtrans = ndc_x1 + ndc_x;
+		ytrans = ndc_y1 + ndc_y;
 	}
 	else
 	{
+		changeAngleX = (MouseX - xOrigin);
+		changeAngleY = (MouseY - yOrigin);
 		updateX = angleX + changeAngleX;
 		updateY = angleY + changeAngleY;
 	}
